@@ -1,1 +1,541 @@
-<h1>Bonjour, voici notre application de planification</h1>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planificateur de Chantiers Paysagers</title>
+  <!-- Tailwind CSS via CDN pour un design épuré, fluide et responsive -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome pour les icônes professionnelles -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f2f9f5',
+              100: '#e1f2e6',
+              500: '#2e7d32',
+              600: '#256628',
+              700: '#1b4d1e',
+              800: '#143b16',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Styles personnalisés et animations smooth */
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: #f8fafc;
+    }
+    .task-card {
+      transition: all 0.2s ease-in-out;
+    }
+    .task-card:hover {
+      transform: translateY(-2px);
+    }
+    .custom-checkbox:checked {
+      background-color: #2e7d32;
+      border-color: #2e7d32;
+    }
+    /* Style pour l'impression du devis / plan d'intervention */
+    @media print {
+      .no-print { display: none !important; }
+      body { background-color: white; color: black; }
+      .print-shadow-none { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+    }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between">
+
+  <!-- Entête principal -->
+  <header class="bg-brand-700 text-white shadow-lg no-print sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-brand-500 rounded-lg text-white">
+          <i class="fa-solid fa-tree text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold leading-tight">Plan-Paysage Pro</h1>
+          <p class="text-xs text-brand-100">Planificateur d'interventions & de chantiers</p>
+        </div>
+      </div>
+      
+      <!-- Choix du type de chantier -->
+      <div class="w-full md:w-auto flex items-center space-x-2 bg-brand-800/60 p-2 rounded-xl border border-brand-500/30">
+        <label for="chantier-select" class="text-sm font-medium whitespace-nowrap text-brand-100 flex items-center gap-2">
+          <i class="fa-solid fa-list-check"></i> Modèle :
+        </label>
+        <select id="chantier-select" class="bg-white text-slate-800 text-sm font-semibold rounded-lg px-3 py-2 w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer disabled:opacity-50">
+          <option value="" disabled selected>Chargement des modèles...</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenu Principal -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+    <!-- Zone de message d'erreur d'ouverture/lecture JSON -->
+    <div id="error-banner" class="hidden mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg shadow-sm">
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <i class="fa-solid fa-triangle-exclamation text-red-500 text-xl"></i>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-bold text-red-800">Erreur de chargement des données (chantiers.json)</h3>
+          <div id="error-details" class="mt-1 text-sm text-red-700 font-mono text-xs bg-red-100 p-2 rounded mt-2 overflow-x-auto"></div>
+          <p class="mt-2 text-xs text-red-600">Veuillez vérifier la présence du fichier <code class="font-bold">chantiers.json</code> dans le même répertoire et valider son formatage JSON.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire d'informations Entreprise et Client -->
+    <section class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200/80 mb-6 print-shadow-none">
+      <h2 class="text-base font-bold text-slate-700 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
+        <i class="fa-solid fa-id-card text-brand-500"></i> Informations du Chantier
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label for="info-entreprise" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Entreprise</label>
+          <input type="text" id="info-entreprise" placeholder="Ex: Vert & Nature SARL" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+        </div>
+        <div>
+          <label for="info-conducteur" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Conducteur de travaux</label>
+          <input type="text" id="info-conducteur" placeholder="Ex: Thomas Martin" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+        </div>
+        <div>
+          <label for="info-client" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nom du Client</label>
+          <input type="text" id="info-client" placeholder="Ex: Mme & M. Dupont" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+        </div>
+        <div>
+          <label for="info-adresse" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Lieu du chantier</label>
+          <input type="text" id="info-adresse" placeholder="Ex: 12 Rue des Lilas, Lyon" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+        </div>
+      </div>
+    </section>
+
+    <!-- Zone synthétique globale des totaux -->
+    <section class="bg-gradient-to-r from-brand-700 to-brand-600 rounded-2xl p-5 text-white shadow-md mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-2xl text-white">
+          <i class="fa-solid fa-calculator"></i>
+        </div>
+        <div>
+          <span class="text-xs uppercase tracking-wider text-brand-100 font-medium">Synthèse globale</span>
+          <h2 id="current-chantier-name" class="text-lg font-bold">Sélectionnez un modèle de chantier</h2>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-3 w-full sm:w-auto justify-around">
+        <div class="bg-white/10 rounded-xl px-4 py-2 text-center min-w-[110px]">
+          <span class="block text-xs text-brand-100">Durée retenue</span>
+          <span id="total-jours" class="text-2xl font-black">0</span>
+          <span class="text-xs text-brand-100">jours</span>
+        </div>
+        <div class="bg-white/10 rounded-xl px-4 py-2 text-center min-w-[110px]">
+          <span class="block text-xs text-brand-100">Heures estimées</span>
+          <span id="total-heures" class="text-2xl font-black">0</span>
+          <span class="text-xs text-brand-100">h (7h/j)</span>
+        </div>
+        <div class="bg-white/10 rounded-xl px-4 py-2 text-center min-w-[110px]">
+          <span class="block text-xs text-brand-100">Tâches retenues</span>
+          <span id="total-taches" class="text-2xl font-black">0 / 0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Liste des tâches -->
+    <section>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-list-ol text-brand-600"></i> Plan des tâches & interventions
+        </h2>
+        <div class="no-print space-x-2">
+          <button id="btn-select-all" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-3 py-1.5 rounded-lg transition-colors">
+            Tout cocher
+          </button>
+          <button id="btn-deselect-all" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-3 py-1.5 rounded-lg transition-colors">
+            Tout décocher
+          </button>
+        </div>
+      </div>
+
+      <!-- Container dynamique des cartes de tâches -->
+      <div id="tasks-container" class="space-y-4">
+        <!-- Rempli dynamiquement en JS -->
+        <div class="text-center py-12 text-slate-400 bg-white rounded-2xl border border-dashed border-slate-300">
+          <i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i>
+          <p>Chargement des données du chantier...</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Pied de page -->
+  <footer class="bg-slate-900 text-slate-400 py-6 text-center text-xs border-t border-slate-800 mt-12 no-print">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>© Plan-Paysage Pro — Outil de planification pour professionnels du paysage.</p>
+      <p class="text-slate-500">Données issues de <code class="text-slate-400">chantiers.json</code></p>
+    </div>
+  </footer>
+
+  <!-- Script applicatif JavaScript -->
+  <script>
+    /**
+     * Application de Planification de Chantiers Paysagers
+     * Charge de manière dynamique le fichier 'chantiers.json' (chemin relatif)
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+      // Etat global de l'application (aucune valeur en dur)
+      const state = {
+        chantiers: [],
+        currentChantier: null,
+        // Sauvegarde de l'état modifié des tâches : { [taskId]: { selected: bool, duree: number, effectif: string/number, comment: string } }
+        taskStates: {}
+      };
+
+      // Éléments du DOM
+      const selectElement = document.getElementById('chantier-select');
+      const errorBanner = document.getElementById('error-banner');
+      const errorDetails = document.getElementById('error-details');
+      const tasksContainer = document.getElementById('tasks-container');
+      
+      const totalJoursEl = document.getElementById('total-jours');
+      const totalHeuresEl = document.getElementById('total-heures');
+      const totalTachesEl = document.getElementById('total-taches');
+      const chantierNameEl = document.getElementById('current-chantier-name');
+
+      const btnSelectAll = document.getElementById('btn-select-all');
+      const btnDeselectAll = document.getElementById('btn-deselect-all');
+
+      // 1. Chargement initial des données via fetch('chantiers.json')
+      async function initData() {
+        try {
+          const response = await fetch('chantiers.json');
+          
+          if (!response.ok) {
+            throw new Error(`Impossible d'accéder au fichier (Code HTTP: ${response.status} - ${response.statusText})`);
+          }
+
+          const rawText = await response.text();
+          let data;
+
+          try {
+            data = JSON.parse(rawText);
+          } catch (jsonErr) {
+            // Tentative d'extraction de la position précise de l'erreur de syntaxe JSON
+            throw new Error(`Erreur de syntaxe dans le fichier JSON :\n${jsonErr.message}`);
+          }
+
+          if (!data || !Array.isArray(data.chantiers) || data.chantiers.length === 0) {
+            throw new Error('Le fichier JSON ne contient pas de liste "chantiers" valide ou la liste est vide.');
+          }
+
+          state.chantiers = data.chantiers;
+          populateChantierSelect();
+          loadChantier(state.chantiers[0].id);
+
+        } catch (err) {
+          showError(err.message);
+        }
+      }
+
+      // 2. Affichage des bannières d'erreur claires en français
+      function showError(message) {
+        errorBanner.classList.remove('hidden');
+        errorDetails.textContent = message;
+        tasksContainer.innerHTML = `
+          <div class="bg-red-50 border border-red-200 text-red-700 p-6 rounded-2xl text-center">
+            <i class="fa-solid fa-circle-xmark text-4xl text-red-500 mb-2"></i>
+            <h3 class="font-bold text-lg">Échec du chargement</h3>
+            <p class="text-sm mt-1">Impossible d'afficher les tâches du chantier en raison d'un problème d'accès aux données.</p>
+          </div>
+        `;
+        selectElement.innerHTML = '<option value="" disabled selected>Erreur de chargement</option>';
+        selectElement.disabled = true;
+      }
+
+      // Popule le menu déroulant avec les chantiers issus du JSON
+      function populateChantierSelect() {
+        selectElement.innerHTML = '';
+        state.chantiers.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.nom;
+          selectElement.appendChild(opt);
+        });
+
+        selectElement.addEventListener('change', (e) => {
+          loadChantier(e.target.value);
+        });
+      }
+
+      // Charge un chantier spécifique
+      function loadChantier(id) {
+        const chantier = state.chantiers.find(c => c.id === id);
+        if (!chantier) return;
+
+        state.currentChantier = chantier;
+        state.taskStates = {};
+
+        // Initialisation des états internes pour chaque tâche du chantier
+        chantier.taches.forEach(tache => {
+          // Si sous-tâches présentes, calculer la durée par la somme des sous-tâches
+          let initialDuree = tache.duree_jours;
+          if (tache.sous_taches && Array.isArray(tache.sous_taches) && tache.sous_taches.length > 0) {
+            initialDuree = tache.sous_taches.reduce((acc, st) => acc + (Number(st.duree_jours) || 0), 0);
+          }
+
+          state.taskStates[tache.id] = {
+            selected: true,
+            duree: Number(initialDuree) || 0,
+            effectif: tache.effectif !== undefined ? tache.effectif : 1,
+            comment: ''
+          };
+        });
+
+        chantierNameEl.textContent = chantier.nom;
+        renderTasks();
+        updateTotals();
+      }
+
+      // Construit la carte visuelle d'une tâche
+      function renderTasks() {
+        if (!state.currentChantier) return;
+
+        tasksContainer.innerHTML = '';
+
+        // Dictionnaire pour retrouver rapidement les noms des tâches par ID (pour l'affichage des dépendances)
+        const taskMap = {};
+        state.currentChantier.taches.forEach(t => { taskMap[t.id] = t; });
+
+        state.currentChantier.taches.forEach((tache, index) => {
+          const tState = state.taskStates[tache.id];
+          const hasSubtasks = tache.sous_taches && Array.isArray(tache.sous_taches) && tache.sous_taches.length > 0;
+
+          // Création de l'élément de carte
+          const card = document.createElement('div');
+          card.className = `task-card bg-white rounded-2xl p-4 sm:p-5 border transition-all ${
+            tState.selected ? 'border-slate-200 shadow-sm' : 'border-slate-100 bg-slate-50/60 opacity-60'
+          }`;
+
+          // Calcul des noms de dépendances ("apres")
+          let dependenciesHtml = '';
+          if (tache.apres && Array.isArray(tache.apres) && tache.apres.length > 0) {
+            const names = tache.apres.map(depId => {
+              const depTask = taskMap[depId];
+              return depTask 
+                ? `<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-200 text-xs px-2 py-0.5 rounded-md font-medium">
+                    <i class="fa-solid fa-turn-up text-[10px] rotate-90"></i> ${escapeHtml(depTask.nom)}
+                   </span>`
+                : `<span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-md">${depId}</span>`;
+            }).join(' ');
+
+            dependenciesHtml = `
+              <div class="mt-2 text-xs text-slate-500 flex flex-wrap items-center gap-1">
+                <span class="font-semibold text-slate-600">Requis au préalable :</span>
+                ${names}
+              </div>
+            `;
+          }
+
+          // HTML des sous-tâches si existantes
+          let subtasksHtml = '';
+          if (hasSubtasks) {
+            const listSub = tache.sous_taches.map(st => `
+              <li class="flex items-center justify-between text-xs py-1 border-b border-slate-100 last:border-0">
+                <span class="text-slate-700"><i class="fa-solid fa-angle-right text-brand-500 mr-1"></i>${escapeHtml(st.nom)}</span>
+                <span class="font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600">${st.duree_jours} j</span>
+              </li>
+            `).join('');
+
+            subtasksHtml = `
+              <div class="mt-3 bg-slate-50 rounded-xl p-3 border border-slate-100">
+                <span class="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">
+                  <i class="fa-solid fa-sitemap mr-1"></i> Sous-tâches (${tache.sous_taches.length})
+                </span>
+                <ul class="space-y-0.5">${listSub}</ul>
+              </div>
+            `;
+          }
+
+          card.innerHTML = `
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              
+              <!-- Checkbox + Titre + Matériel -->
+              <div class="flex items-start space-x-3 flex-grow">
+                <input 
+                  type="checkbox" 
+                  id="chk-${tache.id}" 
+                  class="custom-checkbox mt-1 h-5 w-5 text-brand-600 rounded border-slate-300 focus:ring-brand-500 cursor-pointer"
+                  ${tState.selected ? 'checked' : ''}
+                >
+                <div class="flex-grow">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <label for="chk-${tache.id}" class="font-bold text-base text-slate-800 cursor-pointer hover:text-brand-700">
+                      ${index + 1}. ${escapeHtml(tache.nom)}
+                    </label>
+                  </div>
+                  
+                  ${tache.materiel ? `
+                    <p class="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+                      <i class="fa-solid fa-toolbox text-slate-400"></i>
+                      <span>Matériel : <strong class="text-slate-600 font-medium">${escapeHtml(String(tache.materiel))}</strong></span>
+                    </p>
+                  ` : ''}
+
+                  ${dependenciesHtml}
+                </div>
+              </div>
+
+              <!-- Contrôles de durée & effectif -->
+              <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
+                
+                <!-- Champ Durée -->
+                <div class="flex flex-col">
+                  <label for="duree-${tache.id}" class="text-[11px] font-bold text-slate-400 uppercase mb-1">
+                    Durée (Jours) ${hasSubtasks ? '<span class="text-brand-600" title="Calculée à partir des sous-tâches">*</span>' : ''}
+                  </label>
+                  <div class="flex items-center space-x-1">
+                    <input 
+                      type="number" 
+                      id="duree-${tache.id}" 
+                      step="0.5" 
+                      min="0" 
+                      value="${tState.duree}"
+                      ${hasSubtasks ? 'readonly title="Durée calculée automatiquement par la somme des sous-tâches"' : ''}
+                      class="w-20 text-center font-bold text-sm bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none ${hasSubtasks ? 'bg-slate-100 text-slate-600 cursor-not-allowed' : ''}"
+                    >
+                    <span class="text-xs text-slate-500 font-medium">j</span>
+                  </div>
+                </div>
+
+                <!-- Champ Effectif -->
+                <div class="flex flex-col">
+                  <label for="effectif-${tache.id}" class="text-[11px] font-bold text-slate-400 uppercase mb-1">Effectif</label>
+                  <div class="flex items-center space-x-1">
+                    <input 
+                      type="text" 
+                      id="effectif-${tache.id}" 
+                      value="${escapeHtml(String(tState.effectif))}"
+                      class="w-20 text-center font-bold text-sm bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none"
+                    >
+                    <span class="text-xs text-slate-500 font-medium"><i class="fa-solid fa-user-group text-slate-400"></i></span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Affichage des sous-tâches si présentes -->
+            ${subtasksHtml}
+
+            <!-- Zone de commentaire individuel -->
+            <div class="mt-3">
+              <input 
+                type="text" 
+                id="comment-${tache.id}"
+                placeholder="Ajouter une note ou consigne spécifique pour cette tâche..." 
+                value="${escapeHtml(tState.comment)}"
+                class="w-full text-xs text-slate-600 placeholder-slate-400 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-brand-500 focus:bg-white outline-none"
+              >
+            </div>
+          `;
+
+          tasksContainer.appendChild(card);
+
+          // Attachement des écouteurs d'événements pour l'interactivité
+          const chk = card.querySelector(`#chk-${tache.id}`);
+          const dureeInput = card.querySelector(`#duree-${tache.id}`);
+          const effectifInput = card.querySelector(`#effectif-${tache.id}`);
+          const commentInput = card.querySelector(`#comment-${tache.id}`);
+
+          chk.addEventListener('change', (e) => {
+            state.taskStates[tache.id].selected = e.target.checked;
+            renderTasks();
+            updateTotals();
+          });
+
+          if (!hasSubtasks) {
+            dureeInput.addEventListener('input', (e) => {
+              const val = parseFloat(e.target.value);
+              state.taskStates[tache.id].duree = isNaN(val) ? 0 : val;
+              updateTotals();
+            });
+          }
+
+          effectifInput.addEventListener('input', (e) => {
+            state.taskStates[tache.id].effectif = e.target.value;
+          });
+
+          commentInput.addEventListener('input', (e) => {
+            state.taskStates[tache.id].comment = e.target.value;
+          });
+        });
+      }
+
+      // Recalcul du total des durées et affichage synthétique
+      function updateTotals() {
+        if (!state.currentChantier) return;
+
+        let totalJours = 0;
+        let selectedCount = 0;
+        const totalCount = state.currentChantier.taches.length;
+
+        state.currentChantier.taches.forEach(tache => {
+          const tState = state.taskStates[tache.id];
+          if (tState && tState.selected) {
+            totalJours += Number(tState.duree) || 0;
+            selectedCount++;
+          }
+        });
+
+        const totalHeures = totalJours * 7; // Convention standard 7h par jour de travail
+
+        totalJoursEl.textContent = totalJours % 1 === 0 ? totalJours : totalJours.toFixed(1);
+        totalHeuresEl.textContent = totalHeures % 1 === 0 ? totalHeures : totalHeures.toFixed(1);
+        totalTachesEl.textContent = `${selectedCount} / ${totalCount}`;
+      }
+
+      // Boutons d'action globale (Tout cocher / Tout décocher)
+      btnSelectAll.addEventListener('click', () => {
+        if (!state.currentChantier) return;
+        Object.keys(state.taskStates).forEach(id => {
+          state.taskStates[id].selected = true;
+        });
+        renderTasks();
+        updateTotals();
+      });
+
+      btnDeselectAll.addEventListener('click', () => {
+        if (!state.currentChantier) return;
+        Object.keys(state.taskStates).forEach(id => {
+          state.taskStates[id].selected = false;
+        });
+        renderTasks();
+        updateTotals();
+      });
+
+      // Securité échappement HTML
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      // Démarrage
+      initData();
+    });
+  </script>
+</body>
+</html>
