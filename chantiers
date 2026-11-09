@@ -1,0 +1,214 @@
+{
+  "chantiers": [
+    {
+      "id": "arrosage-automatique",
+      "nom": "Arrosage automatique",
+      "taches": [
+        {
+          "id": "implantation-reseau",
+          "nom": "Implantation du réseau",
+          "duree_jours": 0.5,
+          "effectif": 1,
+          "materiel": "Plan, piquets",
+          "apres": []
+        },
+        {
+          "id": "terrassement-tranchees",
+          "nom": "Terrassement des tranchées",
+          "duree_jours": 1,
+          "effectif": 2,
+          "materiel": "Trancheuse, pelle",
+          "apres": ["implantation-reseau"]
+        },
+        {
+          "id": "pose-canalisations",
+          "nom": "Pose des canalisations",
+          "duree_jours": 1,
+          "effectif": 2,
+          "materiel": "Tuyaux, raccords",
+          "apres": ["terrassement-tranchees"]
+        },
+        {
+          "id": "installation-electrovannes",
+          "nom": "Installation des électrovannes",
+          "duree_jours": 0.5,
+          "effectif": 1,
+          "materiel": "Regard, électrovannes",
+          "apres": ["pose-canalisations"]
+        },
+        {
+          "id": "installation-arroseurs",
+          "nom": "Installation des arroseurs",
+          "duree_jours": 0.5,
+          "effectif": 1,
+          "materiel": "Arroseurs, raccords",
+          "apres": ["pose-canalisations"]
+        },
+        {
+          "id": "raccordement-programmation",
+          "nom": "Raccordement et programmation",
+          "duree_jours": 0.5,
+          "effectif": 1,
+          "materiel": "Programmateur, outils",
+          "apres": ["installation-electrovannes", "installation-arroseurs"]
+        },
+        {
+          "id": "tests-reglages",
+          "nom": "Tests et réglages",
+          "duree_jours": 0.5,
+          "effectif": 1,
+          "materiel": "Manomètre",
+          "apres": ["raccordement-programmation"]
+        },
+        {
+          "id": "remblaiement-nettoyage",
+          "nom": "Remblaiement et nettoyage",
+          "duree_jours": 0.5,
+          "effectif": 2,
+          "materiel": "Pelle, râteau",
+          "apres": ["tests-reglages"]
+        },
+        {
+          "id": "finitions-nettoyage",
+          "nom": "Finitions et nettoyage",
+          "duree_jours": 0.5,
+          "effectif": 2,
+          "materiel": "Souffleur, balais",
+          "apres": ["tests-reglages", "remblaiement-nettoyage"]
+        }
+      ]
+    },
+    {
+      "id": "plantation",
+      "nom": "Plantation",
+      "taches": [
+        {
+          "id": "implantation-vegetaux",
+          "nom": "Implantation des végétaux",
+          "duree_jours": 0.5,
+          "effectif": 2,
+          "materiel": "Décamètre, piquets",
+          "apres": []
+        },
+        {
+          "id": "livraison-repartition",
+          "nom": "Livraison et répartition",
+          "duree_jours": 0.5,
+          "effectif": 2,
+          "materiel": "Camion, transpalette",
+          "apres": ["implantation-vegetaux"]
+        },
+        {
+          "id": "preparation-fosses",
+          "nom": "Préparation des fosses",
+          "duree_jours": 1,
+          "effectif": 2,
+          "materiel": "Mini-pelle, tarière",
+          "apres": ["livraison-repartition"]
+        },
+        {
+          "id": "amendement-preparation-sol",
+          "nom": "Amendement et préparation du sol",
+          "duree_jours": 0.5,
+          "effectif": 2,
+          "materiel": "Compost, outils",
+          "apres": ["preparation-fosses"]
+        },
+        {
+          "id": "plantation-arbres-arbustes",
+          "nom": "Plantation des arbres et arbustes",
+          "duree_jours": 1,
+          "effectif": 2,
+          "materiel": "Pelle, brouette, tuteurs",
+          "apres": ["amendement-preparation-sol"]
+        },
+        {
+          "id": "mise-en-place-paillage",
+          "nom": "Mise en place du paillage",
+          "duree_jours": 0.5,
+          "effectif": 2,
+          "materiel": "Brouette, paillage",
+          "apres": ["plantation-arbres-arbustes"]
+        },
+        {
+          "id": "arrosage-finitions",
+          "nom": "Arrosage et finitions",
+          "duree_jours": 0.5,
+          "effectif": 1,
+          "materiel": "Tuyau, arrosoir",
+          "apres": ["mise-en-place-paillage"]
+        }
+      ]
+    },
+    {
+      "id": "entretien-espaces-verts",
+      "nom": "Entretien espaces verts",
+      "taches": [
+        {
+          "id": "inspection-preparation",
+          "nom": "Inspection et préparation",
+          "duree_jours": 0.5,
+          "effectif": 1,
+          "materiel": "Matériel de contrôle",
+          "apres": []
+        },
+        {
+          "id": "ramassage-dechets",
+          "nom": "Ramassage des déchets",
+          "duree_jours": 0.5,
+          "effectif": 2,
+          "materiel": "Souffleur, sacs",
+          "apres": ["inspection-preparation"]
+        },
+        {
+          "id": "tonte-pelouses",
+          "nom": "Tonte des pelouses",
+          "duree_jours": 0.5,
+          "effectif": "1 à 2",
+          "materiel": "Tondeuse",
+          "apres": ["ramassage-dechets"]
+        },
+        {
+          "id": "taille-haies",
+          "nom": "Taille des haies",
+          "duree_jours": 0.5,
+          "effectif": "1 à 2",
+          "materiel": "Taille-haie",
+          "apres": ["inspection-preparation"]
+        },
+        {
+          "id": "desherbage-massifs",
+          "nom": "Désherbage des massifs",
+          "duree_jours": 0.5,
+          "effectif": "1 à 2",
+          "materiel": "Outils manuels",
+          "apres": ["inspection-preparation"]
+        },
+        {
+          "id": "taille-arbustes",
+          "nom": "Taille des arbustes",
+          "duree_jours": 0.5,
+          "effectif": 1,
+          "materiel": "Sécateur, cisaille",
+          "apres": ["inspection-preparation"]
+        },
+        {
+          "id": "evacuation-dechets-verts",
+          "nom": "Évacuation des déchets verts",
+          "duree_jours": 0.5,
+          "effectif": 2,
+          "materiel": "Broyeur, remorque",
+          "apres": ["tonte-pelouses", "taille-haies", "desherbage-massifs", "taille-arbustes"]
+        },
+        {
+          "id": "nettoyage-controle-final",
+          "nom": "Nettoyage et contrôle final",
+          "duree_jours": 0.5,
+          "effectif": 1,
+          "materiel": "Souffleur, balai",
+          "apres": ["evacuation-dechets-verts"]
+        }
+      ]
+    }
+  ]
+}
